@@ -16,7 +16,11 @@ Rails.application.routes.draw do
   	get 'followers' => 'relationships#followers', as: 'followers'
   end
   
-  resources :groups, except: [:destroy]
+  resources :groups do
+    get 'join' => 'groups#join'
+    get "new/mail" => "groups#new_mail"
+    post "send/mail" => "groups#send_mail"
+  end
   
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end

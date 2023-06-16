@@ -1,15 +1,8 @@
 class GroupsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :ensure_correct_user, only: [:edit, :update]
 
   def index
-    @book = Book.new
     @groups = Group.all
-  end
-
-  def show
     @book = Book.new
-    @group = Group.find(params[:id])
   end
 
   def new
@@ -19,34 +12,59 @@ class GroupsController < ApplicationController
   def create
     @group = Group.new(group_params)
     @group.owner_id = current_user.id
-    if @group.save
-      redirect_to groups_path
-    else
-      render 'new'
-    end
+    @group.users << current_user
+    @group.save
+    redirect_to groups_path
+  end
+
+  def show
+    @group = Group.find(params[:id])
+    @book = Book.new
   end
 
   def edit
+    @group = Group.find(params[:id])
   end
 
   def update
-    if @group.update(group_params)
-      redirect_to groups_path
+    group = Group.find(params[:id])
+    group.update(group_params)
+    redirect_to group_path(group.id)
+  end
+
+  def join
+    @group = Group.find(params[:group_id])
+    @group.users << current_user
+    redirect_to groups_path
+  end
+
+  def destroy
+    group = Group.find(params[:id])
+    if group.is_owned_by?(current_user)
+      group.destroy
     else
-      render "edit"
+      group.users.delete(current_user)
     end
+    redirect_to groups_path
+  end
+
+  def new_mail
+    @group = Group.find(params[:group_id])
+  end
+
+  def send_mail
+    @group = Group.find(params[:group_id])
+    group_users = @group.users
+    @mail_title = params[:mail_title]
+    @mail_content = params[:mail_content]
+    ContactMailer.send_mail(@mail_title, @mail_content,group_users).deliver
   end
 
   private
 
   def group_params
-    params.require(:group).permit(:name, :introduction, :image)
+    params.require(:group).permit(:name,:introduction,:group_image)
   end
 
-  def ensure_correct_user
-    @group = Group.find(params[:id])
-    unless @group.owner_id == current_user.id
-      redirect_to groups_path
-    end
-  end
+
 end

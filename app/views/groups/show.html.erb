@@ -1,25 +1,44 @@
-<div class='container px-5 px-sm-0'>
-  <div class='row'>
-    <div class='col-md-3'>
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
       <h2>User info</h2>
-      <%= render 'users/info', user: current_user %>
+        <%= render 'users/info', user: current_user %>
       <h2 class="mt-3">New book</h2>
-      <%= render 'books/form', book: @book %>
+        <%= render 'books/form', book: @book %>
     </div>
-    <div class='col-md-8 offset-md-1'>
-      <h2>Group Detail</h2>
-      <table class='table table-hover table-inverse'>
-        <tr>
-          <td><%= attachment_image_tag(@group, :image, :fill, 50, 50, fallback: "no-image-icon.jpg") %></td>
-          <td><%= @group.name %></td>
-          <td><%= @group.introduction %></td>
-          <td>
-            <% if @group.owner_id == current_user.id %>
-              <%= link_to 'Edit', edit_group_path(@group), class: "btn btn-sm btn-success" %>
+    <div class="col-md-8 offset-md-1">
+      <h2>Group Details</h2>
+        <table class="table">
+          <tr>
+            <th></th>
+            <th>グループ名</th>
+            <th>紹介文</th>
+            <th>メンバー</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+          <tr>
+            <td><%= image_tag @group.get_group_image, size: '60x60' %></td>
+            <td><%= @group.name %></td>
+            <td><%= @group.introduction %></td>
+            <td>
+              <% @group.users.each do |member| %>
+                <%= member.name %>
+              <% end %>
+            </td>
+            <% if @group.is_owned_by?(current_user) %>
+              <td><%= link_to 'Edit', edit_group_path(@group.id), class:"btn btn-success" %></td>
+              <td><%= link_to 'Notice an Event', group_new_mail_path(@group), class:"btn btn-info" %></td>
+              <td><%= link_to 'Delete Group', group_path(@group), method: :delete, data: { confirm: 'Are you sure?' }, class:"btn btn-danger" %></td>
+            <% elsif @group.users.include?(current_user) %>
+              <td><%= link_to 'Leave this group', group_path(@group), method: :delete, class:"btn btn-danger" %></td>
+            <% else %>
+              <td><%= link_to 'Join this group', group_path(@group), class:"btn btn-info" %></td>
             <% end %>
-          </td>
-        </tr>
-      </table>
+          </tr>
+        </table>
     </div>
   </div>
 </div>
